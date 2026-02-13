@@ -1,3 +1,6 @@
+# .releases folder
+.releases
+
 # eclipse
 bin
 *.launch
