@@ -73,6 +73,10 @@ public class CommandMessage extends Message {
                 airplane.setPilotMouseYawEnabled(true);
             } else if (key == Key.ADVANCED_MOUSE_YAW_SET_OFF && vehicle instanceof AirplaneEntity airplane) {
                 airplane.setPilotMouseYawEnabled(false);
+            } else if (key == Key.BIG_BOMB_SET_ON && vehicle instanceof AirplaneEntity airplane) {
+                airplane.setPilotBigBombEnabled(true);
+            } else if (key == Key.BIG_BOMB_SET_OFF && vehicle instanceof AirplaneEntity airplane) {
+                airplane.setPilotBigBombEnabled(false);
             }
         }
     }
@@ -88,6 +92,8 @@ public class CommandMessage extends Message {
         ADVANCED_CONTROLS_SET_ON,
         ADVANCED_CONTROLS_SET_OFF,
         ADVANCED_MOUSE_YAW_SET_ON,
-        ADVANCED_MOUSE_YAW_SET_OFF
+        ADVANCED_MOUSE_YAW_SET_OFF,
+        BIG_BOMB_SET_ON,
+        BIG_BOMB_SET_OFF
     }
 }

@@ -57,6 +57,7 @@ public abstract class AircraftEntity extends EngineVehicle {
     private float gyroscopeBeepPitch;
     private boolean pilotAdvancedControlsEnabled;
     private boolean pilotMouseYawEnabled = true;
+    private boolean pilotBigBombEnabled;
 
     public AircraftEntity(EntityType<? extends AircraftEntity> entityType, Level world, boolean canExplodeOnCrash) {
         super(entityType, world, canExplodeOnCrash);
@@ -143,6 +144,10 @@ public abstract class AircraftEntity extends EngineVehicle {
         return this instanceof AirplaneEntity;
     }
 
+    private boolean supportsBigBomb() {
+        return this instanceof AirplaneEntity;
+    }
+
     public boolean isPilotAdvancedControlsEnabled() {
         return supportsAdvancedControls() && pilotAdvancedControlsEnabled;
     }
@@ -177,6 +182,24 @@ public abstract class AircraftEntity extends EngineVehicle {
             return;
         }
         pilotMouseYawEnabled = !pilotMouseYawEnabled;
+    }
+
+    public boolean isPilotBigBombEnabled() {
+        return supportsBigBomb() && pilotBigBombEnabled;
+    }
+
+    public void setPilotBigBombEnabled(boolean enabled) {
+        if (!supportsBigBomb()) {
+            return;
+        }
+        pilotBigBombEnabled = enabled;
+    }
+
+    public void togglePilotBigBomb() {
+        if (!supportsBigBomb()) {
+            return;
+        }
+        pilotBigBombEnabled = !pilotBigBombEnabled;
     }
 
     private void updateRollFromControls() {
@@ -518,10 +541,8 @@ public abstract class AircraftEntity extends EngineVehicle {
         // forwards-backwards
         if (!onGround()) {
             if (isPilotAdvancedControlsEnabled()) {
-                if (movementZ != 0.0f) {
-                    float pitchDelta = getProperties().get(VehicleStat.PITCH_SPEED) * pressingInterpolatedZ.getSmooth();
-                    applyAdvancedPitchAndTurn(pitchDelta);
-                }
+                float pitchDelta = getProperties().get(VehicleStat.PITCH_SPEED) * pressingInterpolatedZ.getSmooth();
+                applyAdvancedPitchAndTurn(pitchDelta);
             } else {
                 float pitchDelta = getProperties().get(VehicleStat.PITCH_SPEED) * pressingInterpolatedZ.getSmooth();
                 setXRot(getXRot() + applyStabilizerPitchResistance(pitchDelta));

@@ -4,6 +4,7 @@ import immersive_aircraft.entity.misc.Trail;
 import immersive_aircraft.util.InterpolatedFloat;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -15,6 +16,8 @@ public class AircraftEntityRenderState extends InventoryVehicleEntityRenderState
     public final List<Trail> trails;
     public float enginePower;
     public int tickCount;
+    public boolean showBigBombIndicator;
+    public Vec3 predictedImpactPoint;
 
     public AircraftEntityRenderState() {
         super();

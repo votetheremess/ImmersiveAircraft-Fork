@@ -16,7 +16,7 @@ public class KeyBindings {
     public static final List<KeyMapping> list = new LinkedList<>();
 
     public static final KeyMapping left, right, forward, backward, up, down, pull, push;
-    public static final KeyMapping advancedPitchUp, advancedPitchDown, advancedRollLeft, advancedRollRight, advancedThrustUp, advancedThrustDown, advancedSlowDown, advancedToggleMouseYaw;
+    public static final KeyMapping advancedPitchUp, advancedPitchDown, advancedRollLeft, advancedRollRight, advancedThrustUp, advancedThrustDown, advancedSlowDown, advancedToggleMouseYaw, bigBombToggle;
     public static final KeyMapping dismount, boost, stabilizerToggle, advancedControlsToggle, use;
 
     static {
@@ -58,6 +58,7 @@ public class KeyBindings {
         advancedThrustDown = newKey("advanced_thrust_down", GLFW.GLFW_KEY_LEFT_SHIFT);
         advancedSlowDown = newKey("advanced_slow_down", GLFW.GLFW_KEY_X);
         advancedToggleMouseYaw = newKey("advanced_toggle_mouse_yaw", GLFW.GLFW_KEY_C);
+        bigBombToggle = newKey("big_bomb_toggle", GLFW.GLFW_KEY_Z);
     }
 
     private static KeyMapping newFallbackKey(String name, Supplier<KeyMapping> fallback) {

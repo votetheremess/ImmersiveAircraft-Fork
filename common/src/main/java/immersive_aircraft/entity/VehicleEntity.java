@@ -524,6 +524,18 @@ public abstract class VehicleEntity extends Entity {
         config.save();
     }
 
+    private void setPersistentPilotMouseYawToggle(boolean enabled) {
+        Config config = Config.getInstance();
+        config.persistentPilotMouseYawToggle = enabled;
+        config.save();
+    }
+
+    private void setPersistentPilotBigBombToggle(boolean enabled) {
+        Config config = Config.getInstance();
+        config.persistentPilotBigBombToggle = enabled;
+        config.save();
+    }
+
     private void syncPersistentPilotToggles(AirplaneEntity airplane) {
         Config config = Config.getInstance();
 
@@ -541,6 +553,24 @@ public abstract class VehicleEntity extends Entity {
             NetworkHandler.sendToServer(new CommandMessage(
                     desiredAdvancedControls ? CommandMessage.Key.ADVANCED_CONTROLS_SET_ON
                             : CommandMessage.Key.ADVANCED_CONTROLS_SET_OFF,
+                    getDeltaMovement()));
+        }
+
+        boolean desiredMouseYaw = config.persistentPilotMouseYawToggle;
+        if (airplane.isPilotMouseYawEnabled() != desiredMouseYaw) {
+            airplane.setPilotMouseYawEnabled(desiredMouseYaw);
+            NetworkHandler.sendToServer(new CommandMessage(
+                    desiredMouseYaw ? CommandMessage.Key.ADVANCED_MOUSE_YAW_SET_ON
+                            : CommandMessage.Key.ADVANCED_MOUSE_YAW_SET_OFF,
+                    getDeltaMovement()));
+        }
+
+        boolean desiredBigBomb = config.persistentPilotBigBombToggle;
+        if (airplane.isPilotBigBombEnabled() != desiredBigBomb) {
+            airplane.setPilotBigBombEnabled(desiredBigBomb);
+            NetworkHandler.sendToServer(new CommandMessage(
+                    desiredBigBomb ? CommandMessage.Key.BIG_BOMB_SET_ON
+                            : CommandMessage.Key.BIG_BOMB_SET_OFF,
                     getDeltaMovement()));
         }
     }
@@ -595,11 +625,22 @@ public abstract class VehicleEntity extends Entity {
                     }
 
                     if (Main.debouncingGetter.is(Main.Key.ADVANCED_MOUSE_YAW_TOGGLE)) {
-                        boolean desiredMouseYaw = !airplane.isPilotMouseYawEnabled();
+                        boolean desiredMouseYaw = !Config.getInstance().persistentPilotMouseYawToggle;
+                        setPersistentPilotMouseYawToggle(desiredMouseYaw);
                         airplane.setPilotMouseYawEnabled(desiredMouseYaw);
                         NetworkHandler.sendToServer(new CommandMessage(
                                 desiredMouseYaw ? CommandMessage.Key.ADVANCED_MOUSE_YAW_SET_ON
                                         : CommandMessage.Key.ADVANCED_MOUSE_YAW_SET_OFF,
+                                getDeltaMovement()));
+                    }
+
+                    if (Main.debouncingGetter.is(Main.Key.BIG_BOMB_TOGGLE)) {
+                        boolean desiredBigBomb = !Config.getInstance().persistentPilotBigBombToggle;
+                        setPersistentPilotBigBombToggle(desiredBigBomb);
+                        airplane.setPilotBigBombEnabled(desiredBigBomb);
+                        NetworkHandler.sendToServer(new CommandMessage(
+                                desiredBigBomb ? CommandMessage.Key.BIG_BOMB_SET_ON
+                                        : CommandMessage.Key.BIG_BOMB_SET_OFF,
                                 getDeltaMovement()));
                     }
                 }

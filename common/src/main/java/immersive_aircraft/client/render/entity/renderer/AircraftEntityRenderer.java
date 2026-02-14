@@ -2,9 +2,14 @@ package immersive_aircraft.client.render.entity.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import immersive_aircraft.client.util.BombTrajectoryPredictor;
+import immersive_aircraft.entity.AirplaneEntity;
 import immersive_aircraft.client.render.entity.renderer.utils.ModelPartRenderHandler;
 import immersive_aircraft.entity.AircraftEntity;
 import immersive_aircraft.entity.misc.Trail;
+import immersive_aircraft.entity.weapon.BombBay;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.state.CameraRenderState;
@@ -28,6 +33,9 @@ public abstract class AircraftEntityRenderer<T extends AircraftEntity> extends I
                             CameraRenderState cameraRenderState) {
         //Render trails
         entity.trails.forEach(t -> TrailRenderer.render(t, submitNodeCollector, matrixStack, cameraRenderState));
+        if (entity.showBigBombIndicator) {
+            BombImpactRingRenderer.render(entity.predictedImpactPoint, submitNodeCollector, matrixStack, cameraRenderState);
+        }
     }
 
     @Override
@@ -59,6 +67,40 @@ public abstract class AircraftEntityRenderer<T extends AircraftEntity> extends I
         entity.getTrails().stream().map(Trail::clone).forEach(entityRenderState.trails::add);
         entityRenderState.enginePower = entity.enginePower.getSmooth(f);
         entityRenderState.tickCount = entity.tickCount;
+        entityRenderState.showBigBombIndicator = false;
+        entityRenderState.predictedImpactPoint = null;
+
+        if (!(entity instanceof AirplaneEntity airplane) || !airplane.isPilotBigBombEnabled()) {
+            return;
+        }
+
+        LocalPlayer localPlayer = Minecraft.getInstance().player;
+        if (localPlayer == null || !localPlayer.isLocalPlayer() || entity.getControllingPassenger() != localPlayer) {
+            return;
+        }
+
+        int bombBaySlot = BombBay.findFirstBombBaySlot(entity);
+        if (bombBaySlot < 0) {
+            return;
+        }
+
+        BombBay.BigBombReleaseData releaseData = BombBay.computeBigBombReleaseData(entity, bombBaySlot);
+        if (releaseData == null) {
+            return;
+        }
+
+        Vec3 predictedImpactPoint = BombTrajectoryPredictor.predictImpact(
+                entity.level(),
+                entity,
+                releaseData.position(),
+                releaseData.velocity()
+        );
+        if (predictedImpactPoint == null) {
+            return;
+        }
+
+        entityRenderState.showBigBombIndicator = true;
+        entityRenderState.predictedImpactPoint = predictedImpactPoint;
 
 
     }

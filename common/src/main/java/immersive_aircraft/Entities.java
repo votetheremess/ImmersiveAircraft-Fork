@@ -3,6 +3,7 @@ package immersive_aircraft;
 import immersive_aircraft.cobalt.registration.Registration;
 import immersive_aircraft.entity.*;
 import immersive_aircraft.entity.bullet.BulletEntity;
+import immersive_aircraft.entity.bullet.ImpactBombEntity;
 import immersive_aircraft.entity.bullet.TinyTNT;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
@@ -74,6 +75,14 @@ public interface Entities {
     Supplier<EntityType<TinyTNT>> TINY_TNT = register("tiny_tnt", EntityType.Builder
             .of(TinyTNT::new, MobCategory.MISC)
             .sized(0.375f, 0.375f)
+            .clientTrackingRange(10)
+            .updateInterval(10)
+            .fireImmune()
+    );
+
+    Supplier<EntityType<ImpactBombEntity>> IMPACT_BOMB = register("impact_bomb", EntityType.Builder
+            .of(ImpactBombEntity::new, MobCategory.MISC)
+            .sized(0.5f, 0.5f)
             .clientTrackingRange(10)
             .updateInterval(10)
             .fireImmune()

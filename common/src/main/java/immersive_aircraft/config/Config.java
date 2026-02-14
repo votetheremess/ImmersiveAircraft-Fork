@@ -123,6 +123,15 @@ public final class Config extends JsonConfig {
     @BooleanConfigEntry(false)
     public boolean persistentPilotAdvancedControlsToggle = false;
 
+    @BooleanConfigEntry(true)
+    public boolean persistentPilotMouseYawToggle = true;
+
+    @BooleanConfigEntry(false)
+    public boolean persistentPilotBigBombToggle = false;
+
+    @BooleanConfigEntry(false)
+    public boolean targetGuidedBigBomb = false;
+
     // The entity to spawn when triggering the bomb bay
     // The item also needs to be valid ammunition (e.g., set to 100)
     public Map<String, String> bombBayEntity = Map.of(

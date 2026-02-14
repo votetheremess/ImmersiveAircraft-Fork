@@ -11,6 +11,7 @@ import immersive_aircraft.entity.inventory.VehicleInventoryDescription;
 import immersive_aircraft.entity.inventory.slots.SlotDescription;
 import immersive_aircraft.entity.misc.VehicleProperties;
 import immersive_aircraft.entity.misc.WeaponMount;
+import immersive_aircraft.entity.weapon.BombBay;
 import immersive_aircraft.entity.weapon.Telescope;
 import immersive_aircraft.entity.weapon.Weapon;
 import immersive_aircraft.item.WeaponItem;
@@ -424,7 +425,29 @@ public abstract class InventoryVehicleEntity extends DyeableVehicleEntity implem
     }
 
     public void fireWeapon(int slot, int index, Vector3f direction) {
-        getWeapons().get(slot).get(index).fire(direction);
+        fireWeapon(slot, index, direction, null);
+    }
+
+    public void fireWeapon(int slot, int index, Vector3f direction, @Nullable Vec3 target) {
+        List<Weapon> slotWeapons = getWeapons().get(slot);
+        if (slotWeapons == null || index < 0 || index >= slotWeapons.size()) {
+            return;
+        }
+
+        Weapon weapon = slotWeapons.get(index);
+        if (weapon instanceof BombBay
+                && this instanceof AirplaneEntity airplane
+                && airplane.isPilotBigBombEnabled()
+                && index > 0) {
+            return;
+        }
+
+        if (weapon instanceof BombBay bombBay) {
+            bombBay.fire(direction, target);
+            return;
+        }
+
+        weapon.fire(direction);
     }
 
     @Override

@@ -39,7 +39,8 @@ public final class Main {
         DISMOUNT,
         STABILIZER_TOGGLE,
         ADVANCED_CONTROLS_TOGGLE,
-        ADVANCED_MOUSE_YAW_TOGGLE
+        ADVANCED_MOUSE_YAW_TOGGLE,
+        BIG_BOMB_TOGGLE
     }
 
     public interface DebouncingGetter {

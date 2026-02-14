@@ -1,0 +1,27 @@
+---
+description: Build and copy Fabric release jars after code changes
+alwaysApply: true
+---
+
+# Build And Release Jar Workflow
+
+When making code changes in this repository, always produce and archive a release jar.
+
+## Build Command
+
+Use this exact command:
+
+```powershell
+$env:JAVA_HOME='C:\Program Files\Java\jdk-21'; $env:Path="$env:JAVA_HOME\bin;$env:Path"; .\gradlew.bat :fabric:remapJar
+```
+
+## Copy To Releases
+
+- Source jar: `fabric/build/libs/immersive_aircraft-<mc-version>.jar`
+- Destination folder: `.releases/<mc-version>/`
+- Naming format: `immersive_aircraft-<mc-version>-vNN-<change-summary>.jar`
+- `vNN` must be the next version number already used in that destination folder.
+- `<change-summary>` must be short kebab-case text describing the change.
+
+Example:
+- `immersive_aircraft-1.21.11-v47-advanced-pitch-smoothing-fix.jar`

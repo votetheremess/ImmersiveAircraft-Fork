@@ -16,5 +16,6 @@ public class Renderer {
 
         Registration.register(Entities.BULLET.get(), BulletEntityRenderer::new);
         Registration.register(Entities.TINY_TNT.get(), TinyTNTRenderer::new);
+        Registration.register(Entities.IMPACT_BOMB.get(), ImpactBombRenderer::new);
     }
 }

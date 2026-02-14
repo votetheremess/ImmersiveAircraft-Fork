@@ -40,6 +40,8 @@ public class ClientMain {
                 return consumeClick(KeyBindings.advancedControlsToggle);
             } else if (key == Main.Key.ADVANCED_MOUSE_YAW_TOGGLE) {
                 return consumeClick(KeyBindings.advancedToggleMouseYaw);
+            } else if (key == Main.Key.BIG_BOMB_TOGGLE) {
+                return consumeClick(KeyBindings.bigBombToggle);
             }
             return false;
         };
