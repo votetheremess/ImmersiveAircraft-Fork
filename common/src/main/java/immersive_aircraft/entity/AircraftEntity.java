@@ -586,4 +586,3 @@ public abstract class AircraftEntity extends EngineVehicle {
         return new Vector3f(nx, 0.0f, nz);
     }
 }
-

@@ -16,7 +16,6 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
@@ -34,8 +33,8 @@ public final class ClientFabric implements ClientModInitializer {
 
         ClientTickEvents.START_CLIENT_TICK.register(event -> ClientMain.tick());
 
-        HudRenderCallback.EVENT.register((graphics, tickCounter) ->
-                OverlayRenderer.renderOverlay(graphics, tickCounter.getGameTimeDeltaTicks(), 49));
+        HudRenderCallback.EVENT.register((graphics, tickDelta) ->
+                OverlayRenderer.renderOverlay(graphics, tickDelta, 49));
 
         Renderer.bootstrap();
         WeaponRendererRegistry.bootstrap();
@@ -47,7 +46,7 @@ public final class ClientFabric implements ClientModInitializer {
     /**
      * Handles adding ToolTips to aircraft upgrades.
      */
-    private void itemTooltipCallback(ItemStack stack, Item.TooltipContext tooltipContext, TooltipFlag tooltipFlag, List<Component> tooltip) {
+    private void itemTooltipCallback(ItemStack stack, TooltipFlag tooltipFlag, List<Component> tooltip) {
         VehicleUpgrade upgrade = VehicleUpgradeRegistry.INSTANCE.getUpgrade(stack.getItem());
         if (upgrade != null) {
             tooltip.add(Component.translatable("item.immersive_aircraft.item.upgrade").withStyle(ChatFormatting.GRAY));

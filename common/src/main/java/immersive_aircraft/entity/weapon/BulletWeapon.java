@@ -75,7 +75,13 @@ public abstract class BulletWeapon extends Weapon {
         getEntity().playSound(getSound(), 1.0f, random.nextFloat() * 0.2f + 0.9f);
     }
 
-    protected abstract Entity getBullet(Vector4f position, Vector3f direction);
+    protected Entity getBullet(Vector4f position, Vector3f direction) {
+        return getBullet(getEntity(), position, direction);
+    }
+
+    protected Entity getBullet(Entity shooter, Vector4f position, Vector3f direction) {
+        throw new UnsupportedOperationException("Weapon must override getBullet");
+    }
 
     public SoundEvent getSound() {
         return SoundEvents.CROSSBOW_SHOOT;

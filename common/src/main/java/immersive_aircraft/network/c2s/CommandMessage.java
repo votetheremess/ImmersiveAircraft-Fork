@@ -3,6 +3,7 @@ package immersive_aircraft.network.c2s;
 import immersive_aircraft.cobalt.network.Message;
 import immersive_aircraft.entity.AircraftEntity;
 import immersive_aircraft.entity.AirplaneEntity;
+import immersive_aircraft.entity.InventoryVehicleEntity;
 import immersive_aircraft.entity.VehicleEntity;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -53,6 +54,8 @@ public class CommandMessage extends Message {
                 e.setJumping(false);
                 vehicle.chill();
                 vehicle.setDeltaMovement(fx, fy, fz);
+            } else if (key == Key.INVENTORY && vehicle instanceof InventoryVehicleEntity inventoryVehicle) {
+                inventoryVehicle.openInventory(e);
             } else if (key == Key.BOOST) {
                 if (vehicle.canBoost()) {
                     vehicle.boost();
@@ -79,6 +82,7 @@ public class CommandMessage extends Message {
 
     public enum Key {
         DISMOUNT,
+        INVENTORY,
         BOOST,
         STABILIZER,
         DAMAGE,

@@ -7,25 +7,25 @@ import immersive_aircraft.entity.AircraftEntity;
 import immersive_aircraft.entity.GyrodyneEntity;
 import immersive_aircraft.util.Utils;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class GyrodyneEntityRenderer<T extends GyrodyneEntity> extends AircraftEntityRenderer<T> {
-    private static final Identifier ID = Main.locate("gyrodyne");
+    private static final ResourceLocation ID = Main.locate("gyrodyne");
 
-    protected Identifier getModelId() {
+    protected ResourceLocation getModelId() {
         return ID;
     }
 
-    private final ModelPartRenderHandler<AircraftEntityRenderState> model = new ModelPartRenderHandler<AircraftEntityRenderState>()
+    private final ModelPartRenderHandler<T> model = new ModelPartRenderHandler<T>()
             .add(
                     "wings",
-                    (entity, poseStack, time) -> {
-                        float wind = entity.onGround ? 0.0f : 1.0f;
+                    (entity, yaw, time, matrixStack) -> {
+                        float wind = entity.onGround() ? 0.0f : 1.0f;
                         float nx = (float) (Utils.cosNoise(time / 3.0)) * wind;
                         float ny = (float) (Utils.cosNoise(time / 4.0)) * wind;
 
-                        poseStack.mulPose(Axis.XP.rotationDegrees(ny));
-                        poseStack.mulPose(Axis.ZP.rotationDegrees(nx));
+                        matrixStack.mulPose(Axis.XP.rotationDegrees(ny));
+                        matrixStack.mulPose(Axis.ZP.rotationDegrees(nx));
                     }
             );
 
@@ -35,7 +35,7 @@ public class GyrodyneEntityRenderer<T extends GyrodyneEntity> extends AircraftEn
     }
 
     @Override
-    protected ModelPartRenderHandler<AircraftEntityRenderState> getModel() {
+    protected ModelPartRenderHandler<T> getModel(AircraftEntity entity) {
         return model;
     }
 }

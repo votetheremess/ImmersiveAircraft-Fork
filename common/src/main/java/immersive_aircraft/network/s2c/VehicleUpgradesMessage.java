@@ -4,7 +4,6 @@ import immersive_aircraft.cobalt.network.Message;
 import immersive_aircraft.item.upgrade.VehicleStat;
 import immersive_aircraft.item.upgrade.VehicleUpgrade;
 import immersive_aircraft.item.upgrade.VehicleUpgradeRegistry;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -34,7 +33,7 @@ public class VehicleUpgradesMessage extends Message {
 
         int upgradeCount = buffer.readInt();
         for (int i = 0; i < upgradeCount; i++) {
-            Item item = BuiltInRegistries.ITEM.get(buffer.readIdentifier()).map(Holder.Reference::value).orElseThrow();
+            Item item = BuiltInRegistries.ITEM.get(buffer.readIdentifier());
             upgrades.put(item, readUpgrade(buffer));
         }
     }

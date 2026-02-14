@@ -1,10 +1,9 @@
 package immersive_aircraft.entity.inventory.slots;
 
 import com.google.gson.JsonObject;
-import com.mojang.serialization.JsonOps;
 import immersive_aircraft.entity.InventoryVehicleEntity;
 import immersive_aircraft.screen.slot.IngredientSlot;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.Slot;
@@ -18,9 +17,8 @@ public class IngredientSlotDescription extends TooltippedSlotDescription {
 
 
     public IngredientSlotDescription(String type, int index, int x, int y, JsonObject json) {
-        // https://docs.neoforged.net/docs/datastorage/codecs
         this(type, index, x, y, json,
-                Ingredient.CODEC.parse(JsonOps.INSTANCE, json).getOrThrow(),
+                Ingredient.fromJson(json.get("ingredient")),
                 GsonHelper.getAsInt(json, "maxStackSize", 64)
         );
     }
@@ -31,10 +29,10 @@ public class IngredientSlotDescription extends TooltippedSlotDescription {
         this.maxStackSize = maxStackSize;
     }
 
-    public IngredientSlotDescription(String type, RegistryFriendlyByteBuf buffer) {
+    public IngredientSlotDescription(String type, FriendlyByteBuf buffer) {
         super(type, buffer);
 
-        this.ingredient = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
+        this.ingredient = Ingredient.fromNetwork(buffer);
         this.maxStackSize = buffer.readInt();
     }
 
@@ -43,10 +41,10 @@ public class IngredientSlotDescription extends TooltippedSlotDescription {
     }
 
     @Override
-    public void encode(RegistryFriendlyByteBuf buffer) {
+    public void encode(FriendlyByteBuf buffer) {
         super.encode(buffer);
 
-        Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, ingredient);
+        ingredient.toNetwork(buffer);
         buffer.writeInt(maxStackSize);
     }
 }

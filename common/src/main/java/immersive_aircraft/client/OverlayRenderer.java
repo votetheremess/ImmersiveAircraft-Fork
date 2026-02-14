@@ -9,7 +9,6 @@ import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
@@ -127,12 +126,12 @@ public class OverlayRenderer {
                 y += 7;
             }
 
-            context.blit(RenderPipelines.GUI_TEXTURED, ENGINE_TEX, x - 9, y - 9,
-                    (frame % 5) * 18, Math.floorDiv(frame, 5) * 18, 18, 18, 18, 18, 90, 90);
-            context.blit(RenderPipelines.GUI_TEXTURED, POWER_TEX, x - 9, y - 9,
-                    (powerFrame % 5) * 18, Math.floorDiv(powerFrame, 5) * 18, 18, 18, 18, 18, 90, 90);
-            context.blit(RenderPipelines.GUI_TEXTURED, POWER_TEX, x - 9, y - 9,
-                    (powerFrameTarget % 5) * 18, Math.floorDiv(powerFrameTarget, 5) * 18, 18, 18, 18, 18, 90, 90);
+            context.blit(ENGINE_TEX, x - 9, y - 9,
+                    (frame % 5) * 18, Math.floorDiv(frame, 5) * 18, 18, 18, 90, 90);
+            context.blit(POWER_TEX, x - 9, y - 9,
+                    (powerFrame % 5) * 18, Math.floorDiv(powerFrame, 5) * 18, 18, 18, 90, 90);
+            context.blit(POWER_TEX, x - 9, y - 9,
+                    (powerFrameTarget % 5) * 18, Math.floorDiv(powerFrameTarget, 5) * 18, 18, 18, 90, 90);
         }
     }
 

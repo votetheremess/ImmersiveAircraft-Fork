@@ -11,7 +11,6 @@ import immersive_aircraft.resources.bbmodel.AnimationVariableName;
 import immersive_aircraft.resources.bbmodel.BBAnimationVariables;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -39,12 +38,12 @@ public class RotaryCannon extends BulletWeapon {
     }
 
     @Override
-    protected Entity getBullet(Vector4f position, Vector3f direction) {
-        BulletEntity bullet = BULLET.get().create(getEntity().level(), EntitySpawnReason.TRIGGERED);
+    protected Entity getBullet(Entity shooter, Vector4f position, Vector3f direction) {
+        BulletEntity bullet = BULLET.get().create(shooter.level());
         assert bullet != null;
         bullet.setDamage(Config.getInstance().rotaryCannonDamage);
         bullet.setPos(position.x(), position.y(), position.z());
-        bullet.setOwner(getEntity().getControllingPassenger());
+        bullet.setOwner(shooter);
         bullet.shoot(direction.x(), direction.y(), direction.z(), getVelocity(), getInaccuracy());
         return bullet;
     }
@@ -83,7 +82,6 @@ public class RotaryCannon extends BulletWeapon {
 
     @Override
     public void setAnimationVariables(BBAnimationVariables vars, float time) {
-        super.setAnimationVariables(vars, time);
         float tickDelta = time % 1.0f;
         vars.set(AnimationVariableName.PITCH, (float) (rotationalManager.getPitch(tickDelta) / Math.PI * 180.0f));
         vars.set(AnimationVariableName.YAW, (float) (rotationalManager.getYaw(tickDelta) / Math.PI * 180.0f));

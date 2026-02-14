@@ -5,7 +5,6 @@ import immersive_aircraft.Main;
 import immersive_aircraft.config.Config;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.LinkedList;
@@ -14,13 +13,15 @@ import java.util.function.Supplier;
 
 public class KeyBindings {
     public static final List<KeyMapping> list = new LinkedList<>();
+    public static final String CATEGORY = "itemGroup.immersive_aircraft.immersive_aircraft_tab";
 
     public static final KeyMapping left, right, forward, backward, up, down, pull, push;
     public static final KeyMapping advancedPitchUp, advancedPitchDown, advancedRollLeft, advancedRollRight, advancedThrustUp, advancedThrustDown, advancedSlowDown, advancedToggleMouseYaw;
     public static final KeyMapping dismount, boost, stabilizerToggle, advancedControlsToggle, use;
 
     static {
-        if (Config.getInstance().useCustomKeybindSystem && Main.MOD_LOADER.equals("fabric")) {
+        boolean useMultiKeySystem = Config.getInstance().useCustomKeybindSystem && Main.MOD_LOADER.equals("fabric");
+        if (useMultiKeySystem) {
             left = newMultiKey("multi_control_left", GLFW.GLFW_KEY_A);
             right = newMultiKey("multi_control_right", GLFW.GLFW_KEY_D);
             forward = newMultiKey("multi_control_forward", GLFW.GLFW_KEY_W);
@@ -50,12 +51,12 @@ public class KeyBindings {
         boost = newKey("boost", GLFW.GLFW_KEY_B);
         stabilizerToggle = newKey("stabilizer_toggle", GLFW.GLFW_KEY_V);
         advancedControlsToggle = newKey("advanced_controls_toggle", GLFW.GLFW_KEY_G);
-        advancedPitchUp = newKey("advanced_pitch_up", GLFW.GLFW_KEY_S);
-        advancedPitchDown = newKey("advanced_pitch_down", GLFW.GLFW_KEY_W);
-        advancedRollLeft = newKey("advanced_roll_left", GLFW.GLFW_KEY_A);
-        advancedRollRight = newKey("advanced_roll_right", GLFW.GLFW_KEY_D);
-        advancedThrustUp = newKey("advanced_thrust_up", GLFW.GLFW_KEY_SPACE);
-        advancedThrustDown = newKey("advanced_thrust_down", GLFW.GLFW_KEY_LEFT_SHIFT);
+        advancedPitchUp = useMultiKeySystem ? newMultiKey("advanced_pitch_up", GLFW.GLFW_KEY_S) : newKey("advanced_pitch_up", GLFW.GLFW_KEY_S);
+        advancedPitchDown = useMultiKeySystem ? newMultiKey("advanced_pitch_down", GLFW.GLFW_KEY_W) : newKey("advanced_pitch_down", GLFW.GLFW_KEY_W);
+        advancedRollLeft = useMultiKeySystem ? newMultiKey("advanced_roll_left", GLFW.GLFW_KEY_A) : newKey("advanced_roll_left", GLFW.GLFW_KEY_A);
+        advancedRollRight = useMultiKeySystem ? newMultiKey("advanced_roll_right", GLFW.GLFW_KEY_D) : newKey("advanced_roll_right", GLFW.GLFW_KEY_D);
+        advancedThrustUp = useMultiKeySystem ? newMultiKey("advanced_thrust_up", GLFW.GLFW_KEY_SPACE) : newKey("advanced_thrust_up", GLFW.GLFW_KEY_SPACE);
+        advancedThrustDown = useMultiKeySystem ? newMultiKey("advanced_thrust_down", GLFW.GLFW_KEY_LEFT_SHIFT) : newKey("advanced_thrust_down", GLFW.GLFW_KEY_LEFT_SHIFT);
         advancedSlowDown = newKey("advanced_slow_down", GLFW.GLFW_KEY_X);
         advancedToggleMouseYaw = newKey("advanced_toggle_mouse_yaw", GLFW.GLFW_KEY_C);
     }
@@ -85,9 +86,6 @@ public class KeyBindings {
     private static KeyMapping newMultiKey(String name, int defaultKey) {
         return newMultiKey(name, defaultKey, InputConstants.Type.KEYSYM);
     }
-
-    public static final KeyMapping.Category CATEGORY = new KeyMapping.Category(
-            Identifier.fromNamespaceAndPath(Main.MOD_ID, "immersive_aircraft_tab"));
 
     private static KeyMapping newMultiKey(String name, int defaultKey, InputConstants.Type type) {
         KeyMapping key = new MultiKeyMapping(

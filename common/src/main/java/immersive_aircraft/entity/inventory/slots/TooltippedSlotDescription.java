@@ -1,10 +1,8 @@
 package immersive_aircraft.entity.inventory.slots;
 
 import com.google.gson.JsonObject;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.FormattedCharSequence;
 
 import java.util.List;
 import java.util.Locale;
@@ -15,12 +13,11 @@ public abstract class TooltippedSlotDescription extends SlotDescription {
         super(type, index, x, y, json);
     }
 
-    public TooltippedSlotDescription(String type, RegistryFriendlyByteBuf buffer) {
+    public TooltippedSlotDescription(String type, FriendlyByteBuf buffer) {
         super(type, buffer);
     }
 
-    public Optional<List<ClientTooltipComponent>> getToolTip() {
-        FormattedCharSequence text = Component.translatable("immersive_aircraft.slot." + type().toLowerCase(Locale.ROOT)).getVisualOrderText();
-        return Optional.of(List.of(ClientTooltipComponent.create(text)));
+    public Optional<List<Component>> getToolTip() {
+        return Optional.of(List.of(Component.translatable("immersive_aircraft.slot." + type().toLowerCase(Locale.ROOT))));
     }
 }

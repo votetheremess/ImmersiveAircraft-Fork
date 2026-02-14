@@ -2,12 +2,10 @@ package immersive_aircraft.entity.inventory.slots;
 
 import com.google.gson.JsonObject;
 import immersive_aircraft.entity.InventoryVehicleEntity;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.inventory.tooltip.TooltipComponent;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +23,7 @@ public class SlotDescription {
         this.y = y;
     }
 
-    public SlotDescription(String type, RegistryFriendlyByteBuf buffer) {
+    public SlotDescription(String type, FriendlyByteBuf buffer) {
         this.type = type;
         this.index = buffer.readInt();
         this.x = buffer.readInt();
@@ -36,13 +34,13 @@ public class SlotDescription {
         return new Slot(inventory, index, x, y);
     }
 
-    public void encode(RegistryFriendlyByteBuf buffer) {
+    public void encode(FriendlyByteBuf buffer) {
         buffer.writeInt(index);
         buffer.writeInt(x);
         buffer.writeInt(y);
     }
 
-    public Optional<List<ClientTooltipComponent>> getToolTip() {
+    public Optional<List<Component>> getToolTip() {
         return Optional.empty();
     }
 
@@ -51,7 +49,7 @@ public class SlotDescription {
     }
 
     public interface SlotDescriptionDecoder {
-        SlotDescription decode(String type, RegistryFriendlyByteBuf buffer);
+        SlotDescription decode(String type, FriendlyByteBuf buffer);
     }
 
     public String type() {

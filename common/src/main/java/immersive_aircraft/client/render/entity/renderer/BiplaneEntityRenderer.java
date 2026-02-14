@@ -7,17 +7,16 @@ import immersive_aircraft.entity.AircraftEntity;
 import immersive_aircraft.entity.BiplaneEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.Identifier;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.resources.ResourceLocation;
 
 public class BiplaneEntityRenderer<T extends BiplaneEntity> extends AircraftEntityRenderer<T> {
-    private static final Identifier ID = Main.locate("biplane");
+    private static final ResourceLocation ID = Main.locate("biplane");
 
-    protected Identifier getModelId() {
+    protected ResourceLocation getModelId() {
         return ID;
     }
 
-    private final ModelPartRenderHandler<AircraftEntityRenderState> model = new ModelPartRenderHandler<AircraftEntityRenderState>()
+    private final ModelPartRenderHandler<T> model = new ModelPartRenderHandler<T>()
             .add("banners", this::renderBanners);
 
     public BiplaneEntityRenderer(EntityRendererProvider.Context context) {
@@ -27,7 +26,7 @@ public class BiplaneEntityRenderer<T extends BiplaneEntity> extends AircraftEnti
     }
 
     @Override
-    protected ModelPartRenderHandler<AircraftEntityRenderState> getModel() {
+    protected ModelPartRenderHandler<T> getModel(AircraftEntity entity) {
         return model;
     }
 }

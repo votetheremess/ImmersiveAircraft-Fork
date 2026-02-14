@@ -6,83 +6,82 @@ import immersive_aircraft.client.render.entity.renderer.utils.BBModelRenderer;
 import immersive_aircraft.client.render.entity.renderer.utils.ModelPartRenderHandler;
 import immersive_aircraft.entity.VehicleEntity;
 import immersive_aircraft.resources.BBModelLoader;
-import immersive_aircraft.resources.bbmodel.AnimationVariableName;
+import immersive_aircraft.resources.bbmodel.BBAnimationVariables;
 import immersive_aircraft.resources.bbmodel.BBModel;
 import immersive_aircraft.resources.bbmodel.BBObject;
-import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class VehicleEntityRenderer<T extends VehicleEntity, S extends VehicleEntityRenderState> extends EntityRenderer<T, S> {
-
+public abstract class VehicleEntityRenderer<T extends VehicleEntity> extends EntityRenderer<T> {
     public VehicleEntityRenderer(EntityRendererProvider.Context context) {
         super(context);
     }
 
-    protected abstract ModelPartRenderHandler<S> getModel();
+    protected abstract ModelPartRenderHandler<T> getModel(T entity);
 
-    protected abstract Identifier getModelId();
+    protected abstract ResourceLocation getModelId();
 
-    public void render(S entityRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
-        // Render trails, which need to be rendered relative to an unrotated aircraft.
-        renderBeforeRotation(entityRenderState, poseStack, submitNodeCollector, getModel(), cameraRenderState);
 
-        poseStack.pushPose();
+    @Override
+    public void render(T entity, float yaw, float tickDelta, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int light) {
+        PoseStack.Pose peek = matrixStack.last();
+
+        matrixStack.pushPose();
 
         // Rotation
-        poseStack.mulPose(Axis.YP.rotationDegrees(-entityRenderState.yRot));
-        poseStack.mulPose(Axis.XP.rotationDegrees(entityRenderState.xRot));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(entityRenderState.zRot));
+        matrixStack.mulPose(Axis.YP.rotationDegrees(-yaw));
+        matrixStack.mulPose(Axis.XP.rotationDegrees(entity.getViewXRot(tickDelta)));
+        matrixStack.mulPose(Axis.ZP.rotationDegrees(entity.getRoll(tickDelta)));
 
         // Render model, weapons, etc.
-        renderLocal(entityRenderState, poseStack, submitNodeCollector, getModel(), cameraRenderState);
+        renderLocal(entity, yaw, tickDelta, matrixStack, peek, vertexConsumerProvider, light);
 
-        poseStack.popPose();
+        matrixStack.popPose();
+
+        super.render(entity, yaw, tickDelta, matrixStack, vertexConsumerProvider, light);
     }
 
-    protected abstract void renderBeforeRotation(S entityRenderState,
-                                                 PoseStack poseStack,
-                                                 SubmitNodeCollector submitNodeCollector,
-                                                 ModelPartRenderHandler<S> model,
-                                                 CameraRenderState cameraRenderState);
-
-    public void renderLocal(S entityRenderState,
-                            PoseStack poseStack,
-                            SubmitNodeCollector submitNodeCollector,
-                            ModelPartRenderHandler<S> model,
-                            CameraRenderState cameraRenderState) {
+    public void renderLocal(T entity, float yaw, float tickDelta, PoseStack matrixStack, PoseStack.Pose peek, MultiBufferSource vertexConsumerProvider, int light) {
         //Wobble
-        float h = entityRenderState.damageWobbleTicks;
-        float j = Math.max(0f, entityRenderState.damageWobbleStrength);
-        if (h > 0.0f) {
-            poseStack.mulPose(Axis.XP.rotationDegrees(Mth.sin(h) * h * j / 10.0f * (float) entityRenderState.damageWobbleSide));
+        float h = (float) entity.getDamageWobbleTicks() - tickDelta;
+        float j = entity.getDamageWobbleStrength() - tickDelta;
+        if (j < 0.0f) {
+            j = 0.0f;
         }
+        if (h > 0.0f) {
+            matrixStack.mulPose(Axis.XP.rotationDegrees(Mth.sin(h) * h * j / 10.0f * (float) entity.getDamageWobbleSide()));
+        }
+
+        // Updated variables
+        float time = (entity.level().getGameTime() % 24000 + tickDelta) / 20.0f;
+        BBAnimationVariables.set("time", time);
+        entity.setAnimationVariables(tickDelta);
 
         // Render model
         BBModel bbModel = BBModelLoader.MODELS.get(getModelId());
         if (bbModel != null) {
-            float health = entityRenderState.health;
+            float health = entity.getHealth();
             float r = health * 0.6f + 0.4f;
             float g = health * 0.4f + 0.6f;
             float b = health * 0.4f + 0.6f;
-            BBModelRenderer.renderModel(bbModel, model, poseStack, entityRenderState, submitNodeCollector, r, g, b, 1.0f);
+            BBModelRenderer.renderModel(bbModel, matrixStack, vertexConsumerProvider, light, time, entity, getModel(entity), r, g, b, 1.0f);
         }
     }
 
-    public void renderOptionalObject(String name, BBModel model, PoseStack matrixStack, S entity, SubmitNodeCollector submitNodeCollector) {
-        renderOptionalObject(name, model, matrixStack, entity, submitNodeCollector, 1f, 1f, 1f, 1f);
+    public void renderOptionalObject(String name, BBModel model, MultiBufferSource vertexConsumerProvider, T entity, PoseStack matrixStack, int light, float time) {
+        renderOptionalObject(name, model, vertexConsumerProvider, entity, matrixStack, light, time, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public void renderOptionalObject(String name, BBModel model, PoseStack matrixStack, S entity, SubmitNodeCollector submitNodeCollector, float red, float green, float blue, float alpha) {
+    public void renderOptionalObject(String name, BBModel model, MultiBufferSource vertexConsumerProvider, T entity, PoseStack matrixStack, int light, float time, float red, float green, float blue, float alpha) {
         BBObject object = model.objectsByName.get(name);
         if (object != null) {
-            BBModelRenderer.renderObject(model, object, matrixStack, entity, submitNodeCollector, null, red, green, blue, alpha);
+            BBModelRenderer.renderObject(model, object, matrixStack, vertexConsumerProvider, light, time, entity, null, red, green, blue, alpha);
         }
     }
 
@@ -91,53 +90,18 @@ public abstract class VehicleEntityRenderer<T extends VehicleEntity, S extends V
         if (!entity.shouldRender(x, y, z)) {
             return false;
         }
-        return frustum.isVisible(getBoundingBoxForCulling(entity));
-    }
-
-    @Override
-    protected @NotNull AABB getBoundingBoxForCulling(T entity) {
-        return entity.getBoundingBoxForCulling().inflate(getCullingBoundingBoxInflation());
-    }
-
-    @Override
-    public void submit(S entityRenderState, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState cameraRenderState) {
-        render(entityRenderState, poseStack, submitNodeCollector, cameraRenderState);
-        super.submit(entityRenderState, poseStack, submitNodeCollector, cameraRenderState);
-    }
-
-    @Override
-    public void extractRenderState(T entity, S entityRenderState, float f) {
-        super.extractRenderState(entity, entityRenderState, f);
-        entityRenderState.yRot = entity.getViewYRot(f);
-        entityRenderState.xRot = entity.getViewXRot(f);
-        entityRenderState.zRot = entity.getRoll(f);
-        entityRenderState.damageWobbleSide = entity.getDamageWobbleSide();
-        entityRenderState.damageWobbleTicks = entity.getDamageWobbleTicks() - f;
-        entityRenderState.damageWobbleStrength = entity.getDamageWobbleStrength() - f;
-        entityRenderState.health = entity.getHealth();
-        entityRenderState.isWithinParticleRange = entity.isWithinParticleRange();
-        entityRenderState.packedLight = this.getPackedLightCoords(entity, f);
-        entityRenderState.passengers.clear();
-        entityRenderState.passengers.addAll(entity.getPassengers());
-        entityRenderState.onGround = entity.onGround();
-        entityRenderState.speedVector = entity.getSpeedVector();
-
-        if (entityRenderState.additionalShapes.isEmpty() && !entity.getAdditionalShapes().isEmpty()) {
-            entityRenderState.additionalShapes.addAll(entity.getAdditionalShapes());
-        }
-
-        entityRenderState.controllingPassenger = entity.getControllingPassenger();
-
-        entityRenderState.time = (entity.level().getGameTime() % 24000 + f) / 20.0f;
-        entityRenderState.animationVariables.set(AnimationVariableName.TIME, entityRenderState.time);
-        entity.setAnimationVariables(entityRenderState.animationVariables, f);
+        AABB box = entity.getBoundingBoxForCulling().inflate(getCullingBoundingBoxInflation());
+        return frustum.isVisible(box);
     }
 
     protected double getCullingBoundingBoxInflation() {
         return 1.0;
     }
 
-    private static final Identifier TEXTURE = Identifier.parse("invalid");
+    private static final ResourceLocation TEXTURE = new ResourceLocation("invalid");
 
+    @Override
+    public ResourceLocation getTextureLocation(@NotNull T aircraft) {
+        return TEXTURE;
+    }
 }
-

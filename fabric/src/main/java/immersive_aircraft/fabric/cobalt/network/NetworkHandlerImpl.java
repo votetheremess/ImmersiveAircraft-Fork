@@ -5,30 +5,33 @@ import immersive_aircraft.cobalt.network.NetworkHandler;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 
 public class NetworkHandlerImpl extends NetworkHandler.Impl {
     @Override
     public <T extends Message> void registerMessage(String namespace, CustomPacketPayload.Type<T> type, StreamCodec<RegistryFriendlyByteBuf, T> codec, NetworkHandler.ClientHandler<T> clientHandler, NetworkHandler.ServerHandler<T> serverHandler) {
-        if (clientHandler != null) PayloadTypeRegistry.playS2C().register(type, codec);
-        if (serverHandler != null) PayloadTypeRegistry.playC2S().register(type, codec);
+        ResourceLocation id = type.id();
 
         if (clientHandler != null && FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
-            ClientProxy.register(type, clientHandler);
+            ClientProxy.register(id, codec, clientHandler);
         }
 
         if (serverHandler != null) {
-            ServerPlayNetworking.registerGlobalReceiver(type, (payload, context) -> serverHandler.handle(payload, context.player()));
+            ServerPlayNetworking.registerGlobalReceiver(id, (server, player, handler, buffer, responseSender) -> {
+                T payload = codec.decode(new RegistryFriendlyByteBuf(buffer));
+                server.execute(() -> serverHandler.handle(payload, player));
+            });
         }
     }
 
@@ -39,17 +42,19 @@ public class NetworkHandlerImpl extends NetworkHandler.Impl {
 
     @Override
     public void sendToPlayer(Message msg, ServerPlayer e) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), e.registryAccess());
-        msg.encode(buf);
-        ServerPlayNetworking.send(e, msg);
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+        RegistryFriendlyByteBuf wrapped = new RegistryFriendlyByteBuf(buf);
+        msg.encode(wrapped);
+        ServerPlayNetworking.send(e, msg.type().id(), buf);
     }
 
     @Override
     public void sendToTrackingPlayers(Message msg, Entity e) {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), e.registryAccess());
-        msg.encode(buf);
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+        RegistryFriendlyByteBuf wrapped = new RegistryFriendlyByteBuf(buf);
+        msg.encode(wrapped);
         for (ServerPlayer player : PlayerLookup.tracking(e)) {
-            ServerPlayNetworking.send(player, msg);
+            ServerPlayNetworking.send(player, msg.type().id(), new FriendlyByteBuf(buf.copy()));
         }
     }
 
@@ -59,19 +64,22 @@ public class NetworkHandlerImpl extends NetworkHandler.Impl {
             // Nop
         }
 
-        public static <T extends Message> void register(CustomPacketPayload.Type<T> type, NetworkHandler.ClientHandler<T> handler) {
-            ClientPlayNetworking.registerGlobalReceiver(type, (payload, context) -> handler.handle(payload));
+        public static <T extends Message> void register(ResourceLocation id, StreamCodec<RegistryFriendlyByteBuf, T> codec, NetworkHandler.ClientHandler<T> handler) {
+            ClientPlayNetworking.registerGlobalReceiver(id, (client, networkHandler, buffer, responseSender) -> {
+                RegistryFriendlyByteBuf wrapped = new RegistryFriendlyByteBuf(buffer);
+                T payload = codec.decode(wrapped);
+                client.execute(() -> handler.handle(payload));
+            });
         }
 
         public static void sendToServer(Message msg) {
             LocalPlayer player = Minecraft.getInstance().player;
             if (player != null) {
-                RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), player.registryAccess());
-                msg.encode(buf);
-                ClientPlayNetworking.send(msg);
+                FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+                RegistryFriendlyByteBuf wrapped = new RegistryFriendlyByteBuf(buf);
+                msg.encode(wrapped);
+                ClientPlayNetworking.send(msg.type().id(), buf);
             }
         }
     }
 }
-
-

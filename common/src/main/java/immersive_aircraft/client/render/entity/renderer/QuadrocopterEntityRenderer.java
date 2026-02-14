@@ -5,29 +5,29 @@ import immersive_aircraft.client.render.entity.renderer.utils.ModelPartRenderHan
 import immersive_aircraft.entity.AircraftEntity;
 import immersive_aircraft.entity.QuadrocopterEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.Random;
 
 public class QuadrocopterEntityRenderer<T extends QuadrocopterEntity> extends AircraftEntityRenderer<T> {
-    private static final Identifier ID = Main.locate("quadrocopter");
+    private static final ResourceLocation ID = Main.locate("quadrocopter");
 
-    protected Identifier getModelId() {
+    protected ResourceLocation getModelId() {
         return ID;
     }
 
     private final Random random = new Random();
 
-    private final ModelPartRenderHandler<AircraftEntityRenderState> model = new ModelPartRenderHandler<AircraftEntityRenderState>()
+    private final ModelPartRenderHandler<T> model = new ModelPartRenderHandler<T>()
             .add(
                     "engine",
-                    (entity, poseStack, tickDelta) -> {
-                       double p = entity.enginePower / 128.0;
-                       poseStack.translate((random.nextDouble() - 0.5) * p, (random.nextDouble() - 0.5) * p, (random.nextDouble() - 0.5) * p);
+                    (entity, yaw, tickDelta, matrixStack) -> {
+                        double p = entity.enginePower.getSmooth() / 128.0;
+                        matrixStack.translate((random.nextDouble() - 0.5) * p, (random.nextDouble() - 0.5) * p, (random.nextDouble() - 0.5) * p);
                     },
-                    (model, object, vertexConsumerProvider, entity, matrixStack, modelPartRenderer) -> {
-                        String engine = "engine_" + (entity.enginePower > 0.01 ? entity.tickCount % 2 : 0);
-                        renderOptionalObject(engine, model, matrixStack, entity, vertexConsumerProvider);
+                    (model, object, vertexConsumerProvider, entity, matrixStack, light, time, modelPartRenderer) -> {
+                        String engine = "engine_" + (entity.enginePower.getSmooth() > 0.01 ? entity.tickCount % 2 : 0);
+                        renderOptionalObject(engine, model, vertexConsumerProvider, entity, matrixStack, light, time);
                     }
             );
 
@@ -38,7 +38,7 @@ public class QuadrocopterEntityRenderer<T extends QuadrocopterEntity> extends Ai
     }
 
     @Override
-    protected ModelPartRenderHandler<AircraftEntityRenderState> getModel() {
+    protected ModelPartRenderHandler<T> getModel(AircraftEntity entity) {
         return model;
     }
 }

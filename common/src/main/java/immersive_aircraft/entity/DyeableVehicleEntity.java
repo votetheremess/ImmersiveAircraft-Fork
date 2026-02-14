@@ -1,7 +1,8 @@
 package immersive_aircraft.entity;
 
 import immersive_aircraft.client.ColorUtils;
-import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -9,10 +10,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -29,41 +27,39 @@ public abstract class DyeableVehicleEntity extends VehicleEntity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder entityData) {
-        super.defineSynchedData(entityData);
-
+    protected void defineSynchedData() {
+        super.defineSynchedData();
         entityData.define(DYE_COLOR, -1);
     }
 
     @Override
-    public void addItemTag(ItemStack stack) {
-        super.addItemTag(stack);
-
+    protected void addItemTag(@NotNull CompoundTag tag) {
+        super.addItemTag(tag);
         if (getDyeColor() >= 0) {
-            stack.set(DataComponents.DYED_COLOR, new DyedItemColor(getDyeColor()));
+            tag.getCompound("display").putInt("color", getDyeColor());
         }
     }
 
     @Override
-    public void readItemTag(ItemStack stack) {
-        super.readItemTag(stack);
-
-        DyedItemColor dyedColor = stack.get(DataComponents.DYED_COLOR);
-        if (dyedColor != null) {
-            setDyeColor(dyedColor.rgb());
+    protected void readItemTag(@NotNull CompoundTag tag) {
+        super.readItemTag(tag);
+        CompoundTag displayTag = tag.getCompound("display");
+        if (displayTag.contains("color", Tag.TAG_ANY_NUMERIC)) {
+            setDyeColor(displayTag.getInt("color"));
         }
     }
 
     @Override
-    protected void readAdditionalSaveData(@NotNull ValueInput tag) {
+    protected void readAdditionalSaveData(@NotNull CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        tag.getInt("Color").ifPresent(this::setDyeColor);
+        if (tag.contains("Color")) {
+            setDyeColor(tag.getInt("Color"));
+        }
     }
 
     @Override
-    protected void addAdditionalSaveData(@NotNull ValueOutput tag) {
+    protected void addAdditionalSaveData(@NotNull CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-
         tag.putInt("Color", getDyeColor());
     }
 

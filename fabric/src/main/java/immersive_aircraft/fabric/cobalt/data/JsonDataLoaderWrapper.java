@@ -2,7 +2,9 @@ package immersive_aircraft.fabric.cobalt.data;
 
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
+import net.minecraft.util.profiling.ProfilerFiller;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
@@ -24,7 +26,12 @@ public class JsonDataLoaderWrapper implements IdentifiableResourceReloadListener
     }
 
     @Override
-    public @NotNull CompletableFuture<Void> reload(SharedState sharedState, Executor executor, PreparationBarrier preparationBarrier, Executor executor2) {
-        return dataLoader.reload(sharedState, executor, preparationBarrier, executor2);
+    public @NotNull CompletableFuture<Void> reload(PreparationBarrier preparationBarrier,
+                                                    ResourceManager resourceManager,
+                                                    ProfilerFiller preparationsProfiler,
+                                                    ProfilerFiller reloadProfiler,
+                                                    Executor backgroundExecutor,
+                                                    Executor gameExecutor) {
+        return dataLoader.reload(preparationBarrier, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor);
     }
 }

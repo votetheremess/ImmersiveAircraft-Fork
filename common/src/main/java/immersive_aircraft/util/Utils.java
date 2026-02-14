@@ -4,16 +4,40 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.mojang.datafixers.util.Pair;
 import immersive_aircraft.config.Config;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.world.item.BannerItem;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.FuelValues;
+import net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity;
+import net.minecraft.world.level.block.entity.BannerBlockEntity;
+import net.minecraft.world.level.block.entity.BannerPattern;
+import net.minecraft.world.level.block.entity.BannerPatterns;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.List;
 import java.util.Map;
 
 public class Utils {
+    public static List<Pair<Holder<BannerPattern>, DyeColor>> parseBannerItem(ItemStack banner) {
+        DyeColor baseColor = ((BannerItem) banner.getItem()).getColor();
+
+        CompoundTag nbtCompound = BlockItem.getBlockEntityData(banner);
+        if (nbtCompound == null || !nbtCompound.contains("Patterns")) {
+            return List.of(Pair.of(BuiltInRegistries.BANNER_PATTERN.getHolderOrThrow(BannerPatterns.BASE), baseColor));
+        }
+
+        ListTag nbtList = nbtCompound.getList("Patterns", 10);
+
+        return BannerBlockEntity.createPatterns(baseColor, nbtList);
+    }
+
     public static double cosNoise(double time) {
         return cosNoise(time, 5);
     }
@@ -27,7 +51,7 @@ public class Utils {
         return value;
     }
 
-    public static int getFuelTime(ItemStack fuel, FuelValues fuelValues) {
+    public static int getFuelTime(ItemStack fuel) {
         if (fuel.isEmpty()) {
             return 0;
         }
@@ -41,7 +65,7 @@ public class Utils {
 
         // Vanilla fuel
         if (Config.getInstance().acceptVanillaFuel) {
-            int fuelTime = fuelValues.burnDuration(fuel);
+            int fuelTime = AbstractFurnaceBlockEntity.getFuel().getOrDefault(fuel.getItem(), 0);
             if (fuelTime > 0) {
                 return fuelTime;
             }

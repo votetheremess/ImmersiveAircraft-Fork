@@ -40,6 +40,10 @@ public class BBAnimation {
         return animators.get(uuid).sample(this, channel, time, vars);
     }
 
+    public Vector3f sample(String uuid, BBAnimator.Channel channel, float time) {
+        return sample(uuid, channel, time, BBAnimationVariables.global());
+    }
+
     public int toFrameIndex(float length) {
         int frameIndex = (int) (length * snapping + 0.5);
         return Math.floorMod(frameIndex, frameCount);
